@@ -1,0 +1,18 @@
+component dma
+package drivers {
+   component "dw-dma" as dw_dma
+}
+database ".data" {
+   component "struct dma dma[]" as d_dma
+   component dmac0
+   component dmac1
+}
+database ".rodata" {
+   component dw_dma_ops
+}
+
+dma ..> d_dma : expose via dma_get()
+d_dma ..> dmac0
+d_dma ..> dmac1
+d_dma ..> dw_dma_ops : links to
+dw_dma ..> dw_dma_ops : provide

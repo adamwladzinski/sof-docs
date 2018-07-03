@@ -77,3 +77,8 @@ in order to learn the channel ID and pass it to the ``channel_get()`` request.
 
 Supported Devices
 *****************
+
+.. toctree::
+   :maxdepth: 2
+
+   intel/index
