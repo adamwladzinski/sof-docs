@@ -20,12 +20,17 @@ work_queue -> hda_dma : hda_work->cb()
 	hda_dma -> client : callback()
 		activate client
 		client -> client : comp_update_buffer_produce/consume()
+		client -> client : update *next
 	hda_dma <-- client
 	deactivate client
 
-	note right: FPI is updated
+	hda_dma -> hda_dma : update FPI with data from *next
 
 	hda_dma -> hda_dma : update notification ptr
 
+	opt cyclic
+		hda_dma -> work_queue : work_schedule_default(...)
+		note right: re-arm the timer for next 1ms (- time elapsed in cb)
+	end opt
 work_queue <-- hda_dma
 deactivate hda_dma

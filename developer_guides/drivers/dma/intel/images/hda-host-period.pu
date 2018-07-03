@@ -1,0 +1,41 @@
+actor client
+participant hda_dma
+
+-> client : host_trigger()
+activate client
+
+client -> hda_dma : dma_start()
+	activate hda_dma
+	note right: GEN := 1 -> transfer starts, first data is coming...
+
+client <-- hda_dma
+deactivate hda_dma
+
+client -> client : host_copy()
+	activate client
+
+	client -> hda_dma : dma_copy()
+		activate hda_dma
+		note right: first dma_copy() is called immediately after dma_start()\n\
+	May need to pool for a short time until the first period is available
+
+		hda_dma -> hda_dma : verify next period is available in the local buffer
+
+		hda_dma -> client : callback()
+			activate client
+			client -> client : comp_update_buffer_produce/consume()
+			client -> client : update *next
+		hda_dma <-- client
+		deactivate client
+
+		hda_dma -> hda_dma : update FPI with data from *next
+
+		hda_dma -> hda_dma : update notification ptr
+
+	client <-- hda_dma
+	deactivate hda_dma
+
+deactivate client
+
+<-- client
+deactivate client

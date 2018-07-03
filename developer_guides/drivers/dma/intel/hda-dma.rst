@@ -50,19 +50,24 @@ called as ``GEN`` is set to 1 there. Since there are no buffer completion
 interrupts available, the DSP has to poll the write/read pointer positions in
 order to notify the client that transmission of next segment is finished.
 
+Polling should be done for as short time as possible, when the DSP
+expects the transmission of the next data period to be finished.
+Therefore the dma driver registers a callback in the default system work
+queue with appropriate timeout. Value of the timeout is approximated at
+point in time when the transmission is expected to finish.
+
 Non-cyclic Mode (host input/output DMA)
 =======================================
 
-Polling should be started with a delay, when the transmission is expected
-to complete successfully. The dma driver registers a callback in the default
-system work queue with the appropriate timeout that is as short as possible
-but long enough for the first period transfer to complete (TBD value).
+.. uml:: images/hda-host-period.pu
+   :caption: Callback notification for host playback and capture
 
-.. uml:: images/hda-host-first-period.pu
-   :caption: First callback notification for host playback
+.. note:: If experiments show that first polling in ``dma_copy()`` takes
+   too long, work schedule (with short, measured t/o) needs to be added.
 
-.. uml:: images/hda-host-next-period.pu
-   :caption: Next callback notification for host playback and capture
+Note that the sequence inside ``dma_copy()`` which begins with verification
+of available data is identical as the work callback used in cyclic mode,
+therefore ``dma_copy()`` may just call the work callback function internally.
 
 Cyclic Mode (link input/output DMA)
 ===================================
